@@ -1,5 +1,5 @@
 import { createdAt, id, updatedAt } from "@/drizzle/schema-helpers";
-import { userTable } from "@/drizzle/schema/auth";
+import { user } from "@/drizzle/schema/auth";
 import { productTable } from "@/drizzle/schema/product";
 import { relations } from "drizzle-orm";
 import { integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -12,7 +12,7 @@ export const purchaseTable = pgTable("purchases", {
     .$type<{ name: string; description: string; imageUrl: string }>(),
   userId: uuid()
     .notNull()
-    .references(() => userTable.id, { onDelete: "restrict" }),
+    .references(() => user.id, { onDelete: "restrict" }),
   productId: uuid()
     .notNull()
     .references(() => productTable.id, { onDelete: "restrict" }),
@@ -23,9 +23,9 @@ export const purchaseTable = pgTable("purchases", {
 });
 
 export const purchaseRelations = relations(purchaseTable, ({ one }) => ({
-  user: one(userTable, {
+  user: one(user, {
     fields: [purchaseTable.userId],
-    references: [userTable.id],
+    references: [user.id],
   }),
   product: one(productTable, {
     fields: [purchaseTable.productId],

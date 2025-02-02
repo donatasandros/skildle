@@ -15,14 +15,16 @@ function createRouteMatcher(patterns: string[]) {
 
 const isPublicRoute = createRouteMatcher([
   "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
+  "/auth/login(.*)",
+  "/auth/sign-up(.*)",
   "/api(.*)",
   "/courses/:courseId/lessons/:lessonId",
   "/products(.*)",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+
+const isAuthRoute = createRouteMatcher(["/auth(.*)"]);
 
 export default async function authMiddleware(request: NextRequest) {
   const { data: session } = await betterFetch<Session>("/api/auth/get-session", {
@@ -32,15 +34,18 @@ export default async function authMiddleware(request: NextRequest) {
     },
   });
 
+  if (isAuthRoute(request.nextUrl.pathname) && session) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   if (isAdminRoute(request.nextUrl.pathname)) {
-    console.log("admin route");
-    if (session?.user.role !== "rokas") {
+    if (session?.user.role !== "admin") {
       return new NextResponse(null, { status: 404 });
     }
   }
 
   if (!isPublicRoute(request.nextUrl.pathname) && !session) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   return NextResponse.next();

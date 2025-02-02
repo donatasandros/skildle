@@ -1,5 +1,4 @@
 import { userCourseAccessTable } from "@/drizzle/schema";
-import { id } from "@/drizzle/schema-helpers";
 import { relations } from "drizzle-orm";
 import { boolean, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
@@ -7,8 +6,8 @@ export const userRoles = ["user", "admin"] as const;
 export type UserRole = (typeof userRoles)[number];
 export const userRoleEnum = pgEnum("user_role", userRoles);
 
-export const userTable = pgTable("users", {
-  id,
+export const user = pgTable("users", {
+  id: uuid("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull(),
@@ -18,12 +17,12 @@ export const userTable = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const userRelations = relations(userTable, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   userCourseAccess: many(userCourseAccessTable),
 }));
 
-export const sessionTable = pgTable("sessions", {
-  id,
+export const session = pgTable("sessions", {
+  id: text("id").primaryKey(),
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").notNull(),
@@ -32,16 +31,16 @@ export const sessionTable = pgTable("sessions", {
   userAgent: text("user_agent"),
   userId: uuid()
     .notNull()
-    .references(() => userTable.id),
+    .references(() => user.id),
 });
 
-export const accountTable = pgTable("accounts", {
-  id,
+export const account = pgTable("accounts", {
+  id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
   userId: uuid()
     .notNull()
-    .references(() => userTable.id),
+    .references(() => user.id),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
@@ -53,8 +52,8 @@ export const accountTable = pgTable("accounts", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const verificationTable = pgTable("verifications", {
-  id,
+export const verification = pgTable("verifications", {
+  id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
